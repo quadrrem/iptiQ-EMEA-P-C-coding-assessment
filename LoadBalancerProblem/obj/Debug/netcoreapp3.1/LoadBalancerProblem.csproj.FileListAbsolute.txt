@@ -1,0 +1,12 @@
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\bin\Debug\netcoreapp3.1\LoadBalancerProblem.deps.json
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\bin\Debug\netcoreapp3.1\LoadBalancerProblem.dll
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\obj\Debug\netcoreapp3.1\LoadBalancerProblem.AssemblyInfoInputs.cache
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\obj\Debug\netcoreapp3.1\LoadBalancerProblem.AssemblyInfo.cs
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\bin\Debug\netcoreapp3.1\LoadBalancerProblem.pdb
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\obj\Debug\netcoreapp3.1\LoadBalancerProblem.dll
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\obj\Debug\netcoreapp3.1\LoadBalancerProblem.pdb
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\obj\Debug\netcoreapp3.1\LoadBalancerProblem.csprojAssemblyReference.cache
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\bin\Debug\netcoreapp3.1\LoadBalancerProblem.runtimeconfig.json
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\bin\Debug\netcoreapp3.1\LoadBalancerProblem.runtimeconfig.dev.json
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\obj\Debug\netcoreapp3.1\LoadBalancerProblem.genruntimeconfig.cache
+D:\git\personal\CodingTest\LoadBalancerProblem\LoadBalancerProblem\obj\Debug\netcoreapp3.1\LoadBalancerProblem.csproj.CoreCompileInputs.cache
