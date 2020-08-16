@@ -126,7 +126,7 @@ namespace LoadBalancerTestProject
             Assert.Equal(RegistrationStatus.Success, loadBalancerManager.Register("providerIdentifier1"));
             Assert.Equal(DeregistrationStatus.DeregistrationSuccess, loadBalancerManager.Deregister("providerIdentifier1"));
 
-            Assert.Equal(9, loadBalancerManager.GetLoadBalancer().Providers.Count);
+            Assert.Empty(loadBalancerManager.GetLoadBalancer().Providers);
         }
 
         [Fact]
@@ -138,7 +138,7 @@ namespace LoadBalancerTestProject
             Assert.Equal(RegistrationStatus.Success, loadBalancerManager.Register("providerIdentifier1"));
             Assert.Equal(DeregistrationStatus.DeregistrationFailure, loadBalancerManager.Deregister("providerIdentifier11"));
 
-            Assert.Equal(9, loadBalancerManager.GetLoadBalancer().Providers.Count);
+            Assert.Equal(1, loadBalancerManager.GetLoadBalancer().Providers.Count);
         }
     }
 }
