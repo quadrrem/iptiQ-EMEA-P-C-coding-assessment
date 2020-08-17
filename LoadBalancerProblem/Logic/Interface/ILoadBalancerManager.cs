@@ -30,6 +30,7 @@ namespace LoadBalancerProblem.Logic.Interface
         /// If the above two conditions are false, the function will register the new provider and return 1.
         /// </returns>
         RegistrationStatus Register(string providerIdentifier);
+        DeregistrationStatus Deregister(string providerIdentifier);
         string Get();
         LoadBalancer GetLoadBalancer();
     }
