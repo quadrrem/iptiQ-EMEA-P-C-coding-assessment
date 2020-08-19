@@ -8,6 +8,7 @@ namespace LoadBalancerProblem
         public Provider(string identifier)
         {
             this.identifier = identifier;
+            isActive = true;
         }
 
         /// <summary>
@@ -21,9 +22,19 @@ namespace LoadBalancerProblem
             {
                 return identifier;
             }
+        }
+
+        private bool isActive;
+
+        public bool IsActive
+        {
+            get
+            {
+                return isActive;
+            }
             set
             {
-                identifier = value;
+                isActive = value;
             }
         }
     }

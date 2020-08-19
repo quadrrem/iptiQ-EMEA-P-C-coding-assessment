@@ -6,23 +6,30 @@ namespace LoadBalancerProblem.Models
     {
         public LoadBalancer()
         {
-            providers = new List<Provider>();
+            registeredProviders = new List<Provider>();
+            deregisteredProviders = new List<Provider>();
         }
 
         /// <summary>
         /// A loadbalancer can be connected to a list of 0 or more registered providers
         /// </summary>
-        private IList<Provider> providers;
+        private IList<Provider> registeredProviders;
 
-        public IList<Provider> Providers
+        public IList<Provider> RegisteredProviders
         {
             get
             {
-                return providers;
+                return registeredProviders;
             }
-            set
+        }
+
+        private IList<Provider> deregisteredProviders;
+
+        public IList<Provider> DeregisteredProviders
+        {
+            get
             {
-                providers = value;
+                return deregisteredProviders;
             }
         }
     }

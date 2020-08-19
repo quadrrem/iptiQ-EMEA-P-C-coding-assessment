@@ -12,7 +12,6 @@ namespace LoadBalancerProblem
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IProviderLogic, ProviderLogic>();
             services.AddScoped<ILoadBalancerManager, LoadBalancerManager>();
             services.AddScoped<ILoadBalancerAlgorithm, RandomLoadBalancerAlgorithm>();
             services.AddScoped<ILoadBalancerAlgorithm, RoundRobinLoadBalancerAlgorithm>();

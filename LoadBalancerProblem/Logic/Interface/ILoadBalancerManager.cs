@@ -1,5 +1,4 @@
 ﻿using LoadBalancerProblem.Models;
-using System.Threading.Tasks;
 
 namespace LoadBalancerProblem.Logic.Interface
 {
@@ -9,9 +8,10 @@ namespace LoadBalancerProblem.Logic.Interface
 
         enum RegistrationStatus
         {
-            AlreadyRegistered = 1,
-            MaxNumberExceed = 2,
-            Success = 3
+            ProviderAlreadyRegistered = 1,
+            MaxNumberOfProviderExceeded = 2,
+            RegistrationSuccess = 3,
+            RegistrationFailure = 4
         }
 
         enum DeregistrationStatus
@@ -33,5 +33,6 @@ namespace LoadBalancerProblem.Logic.Interface
         DeregistrationStatus Deregister(string providerIdentifier);
         string Get();
         LoadBalancer GetLoadBalancer();
+        void Check();
     }
 }
