@@ -3,7 +3,7 @@ using System;
 
 namespace LoadBalancerProblem.Logic.Implementation
 {
-    public class RandomLoadBalancerAlgorithm : ILoadBalancerAlgorithm
+    public class RandomLoadBalancerAlgorithm : IRandomInvokationAlgorithm
     {
         public int Invoke()
         {

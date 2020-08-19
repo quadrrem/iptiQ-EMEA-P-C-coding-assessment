@@ -1,59 +1,66 @@
-﻿using LoadBalancerProblem.Logic.Interface;
-using LoadBalancerProblem.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using static LoadBalancerProblem.Logic.Interface.ILoadBalancerManager;
+using LoadBalancerProblem.Logic.Interface;
+using LoadBalancerProblem.Models;
 
 namespace LoadBalancerProblem.Logic.Implementation
 {
     public class LoadBalancerManager : ILoadBalancerManager
     {
-        private LoadBalancer loadBalancer = new LoadBalancer();
-        private readonly ILoadBalancerAlgorithm _loadBalancerAlgorithm;
+        private LoadBalancer _loadBalancer;
+        private ILoadBalancerAlgorithm _loadBalancerAlgorithm;
+        private readonly IProviderManager _providerManager;
+
         IDictionary<string, int> ProviderHeartBeat = new Dictionary<string, int>();
 
-        public LoadBalancerManager(ILoadBalancerAlgorithm loadBalancerAlgorithm)
+        public LoadBalancerManager(
+            IProviderManager providerManager,
+            LoadBalancer loadBalancer)
+        {
+            _providerManager = providerManager;
+            _loadBalancer = loadBalancer;
+        }
+        public void SetLoadBalancerAlgorithm(ILoadBalancerAlgorithm loadBalancerAlgorithm)
         {
             _loadBalancerAlgorithm = loadBalancerAlgorithm;
         }
 
         public LoadBalancer GetLoadBalancer()
         {
-            return loadBalancer;
+            return _loadBalancer;
         }
 
         public RegistrationStatus Register(string providerIdentifier)
         {
-            if(loadBalancer.RegisteredProviders.Count == MAX_NUMBER_OF_PROVIDERS)
+            if(_loadBalancer.RegisteredProviders.Count == MAX_NUMBER_OF_PROVIDERS)
             {
                 return RegistrationStatus.MaxNumberOfProviderExceeded;
             }
 
-            if (loadBalancer.RegisteredProviders.Any(x => x.Identifier == providerIdentifier)) 
+            if (_loadBalancer.RegisteredProviders.Any(x => x.Identifier == providerIdentifier)) 
             {
                 return RegistrationStatus.ProviderAlreadyRegistered;
             }
 
-            loadBalancer.RegisteredProviders.Add(new Provider(providerIdentifier));
+            _loadBalancer.RegisteredProviders.Add(new Provider(providerIdentifier));
 
-            if(loadBalancer.DeregisteredProviders == null || !loadBalancer.DeregisteredProviders.Any())
+            if(_loadBalancer.DeregisteredProviders == null || !_loadBalancer.DeregisteredProviders.Any())
             {
                 return RegistrationStatus.RegistrationSuccess;
             }
 
             // check if the provider exists in the deregistered list 
-            var provider = loadBalancer.DeregisteredProviders.FirstOrDefault(x => x.Identifier == providerIdentifier);
+            var provider = _loadBalancer.DeregisteredProviders.FirstOrDefault(x => x.Identifier == providerIdentifier);
 
             if(provider == null)
             {
                 return RegistrationStatus.RegistrationSuccess;
             }
 
-            var result = loadBalancer.DeregisteredProviders.Remove(provider);
+            var result = _loadBalancer.DeregisteredProviders.Remove(provider);
 
             if (!result)
             {
@@ -65,22 +72,22 @@ namespace LoadBalancerProblem.Logic.Implementation
 
         public DeregistrationStatus Deregister(string providerIdentifier)
         {
-            var provider = loadBalancer.RegisteredProviders.FirstOrDefault(x => x.Identifier == providerIdentifier);
+            var provider = _loadBalancer.RegisteredProviders.FirstOrDefault(x => x.Identifier == providerIdentifier);
 
             if (provider == null)
             {
                 return DeregistrationStatus.DeregistrationFailure;
             }
 
-            loadBalancer.DeregisteredProviders.Add(provider);
+            _loadBalancer.DeregisteredProviders.Add(provider);
             ProviderHeartBeat.Add(providerIdentifier, 0);
 
-            if (loadBalancer.RegisteredProviders == null || !loadBalancer.RegisteredProviders.Any())
+            if (_loadBalancer.RegisteredProviders == null || !_loadBalancer.RegisteredProviders.Any())
             {
                 return DeregistrationStatus.DeregistrationSuccess;
             }
 
-            var result = loadBalancer.RegisteredProviders.Remove(provider);
+            var result = _loadBalancer.RegisteredProviders.Remove(provider);
 
             if (result)
             {
@@ -93,12 +100,30 @@ namespace LoadBalancerProblem.Logic.Implementation
 
         public string Get()
         {
-            return loadBalancer.RegisteredProviders[_loadBalancerAlgorithm.Invoke()].Identifier;
+            if (_loadBalancer.RegisteredProviders == null || !_loadBalancer.RegisteredProviders.Any())
+            {
+                return null;
+            }
+
+            var invokedProviderIndex = _loadBalancerAlgorithm.Invoke();
+            var invokedProvider = _loadBalancer.RegisteredProviders[invokedProviderIndex];
+
+            var result = _providerManager.Get(invokedProvider);
+
+            if (result)
+            {
+                return invokedProvider.Identifier;
+            }
+
+            invokedProvider.IsActive = false;
+            _loadBalancer.RegisteredProviders[invokedProviderIndex] = invokedProvider;
+
+            return null;           
         }
 
         public void Check()
         {
-            foreach(var p in loadBalancer.RegisteredProviders.ToList())
+            foreach(var p in _loadBalancer.RegisteredProviders.ToList())
             {
                 if(p.IsActive == false)
                 {
@@ -106,7 +131,7 @@ namespace LoadBalancerProblem.Logic.Implementation
                 }
             }
 
-            foreach (var p in loadBalancer.DeregisteredProviders.ToList())
+            foreach (var p in _loadBalancer.DeregisteredProviders.ToList())
             {
                 if (p.IsActive == true)
                 {

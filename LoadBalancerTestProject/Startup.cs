@@ -1,10 +1,8 @@
 ﻿using LoadBalancerProblem;
 using LoadBalancerProblem.Logic.Implementation;
 using LoadBalancerProblem.Logic.Interface;
+using LoadBalancerProblem.Models;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace LoadBalancerTestProject
 {
@@ -13,9 +11,11 @@ namespace LoadBalancerTestProject
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<Provider>();
+            services.AddScoped<LoadBalancer>();
             services.AddScoped<ILoadBalancerManager, LoadBalancerManager>();
-            services.AddScoped<ILoadBalancerAlgorithm, RandomLoadBalancerAlgorithm>();
-            services.AddScoped<ILoadBalancerAlgorithm, RoundRobinLoadBalancerAlgorithm>();
+            services.AddScoped<IProviderManager, ProviderManager>();
+            services.AddScoped<IRandomInvokationAlgorithm, RandomLoadBalancerAlgorithm>();
+            services.AddScoped<IRoundRobinAlgorithm, RoundRobinLoadBalancerAlgorithm>();
         }
     }
 }

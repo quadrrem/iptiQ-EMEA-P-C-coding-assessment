@@ -1,23 +1,27 @@
-﻿using LoadBalancerProblem.Logic.Implementation;
-using LoadBalancerProblem.Logic.Interface;
-using LoadBalancerProblem.Models;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Xunit;
-using static LoadBalancerProblem.Logic.Interface.ILoadBalancerManager;
+using LoadBalancerProblem.Logic;
+using LoadBalancerProblem.Logic.Interface;
 
 namespace LoadBalancerTestProject
 {
     public class LoadBalancerManagerTest
     {
         private ILoadBalancerManager _loadBalancerManager;
+        private IRoundRobinAlgorithm _roundRobinAlgorithm;
+        private IRandomInvokationAlgorithm _randomInvokationAlgorithm;
 
-        public LoadBalancerManagerTest(ILoadBalancerManager loadBalancerManager)
+        public LoadBalancerManagerTest(
+            ILoadBalancerManager loadBalancerManager,
+            IRoundRobinAlgorithm roundRobinAlgorithm,
+            IRandomInvokationAlgorithm randomInvokationAlgorithm)
         { 
             _loadBalancerManager = loadBalancerManager;
+            _roundRobinAlgorithm = roundRobinAlgorithm;
+            _randomInvokationAlgorithm = randomInvokationAlgorithm;
         }
+
         [Fact]
         public void Step2_RegisterProvider_Success_With10Providers()
         {
@@ -60,8 +64,7 @@ namespace LoadBalancerTestProject
         [Fact]
         public void Step3_RandomLoadBalancerInvocationTest_Success()
         {
-            var loadBalancerAlgorithm = new RandomLoadBalancerAlgorithm();
-            _loadBalancerManager = new LoadBalancerManager(loadBalancerAlgorithm);
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
 
             var providers = new List<string>();
 
@@ -78,10 +81,9 @@ namespace LoadBalancerTestProject
         }
 
         [Fact]
-        public void Step4_RoundRobinLoadBalancerInvocationTest_Success()
+        public void Step4_RoundRobinLoadBalancerInvocationTest_InvokeRequestsToProviders_Success()
         {
-            var loadBalancerAlgorithm = new RoundRobinLoadBalancerAlgorithm();
-            _loadBalancerManager = new LoadBalancerManager(loadBalancerAlgorithm);
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_roundRobinAlgorithm);
 
             var providers = new List<string>();
 
@@ -91,7 +93,6 @@ namespace LoadBalancerTestProject
                 providers.Add(identifier);
                 Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
             }
-
 
             Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get()));
             Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get()));
@@ -103,6 +104,14 @@ namespace LoadBalancerTestProject
             Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get()));
             Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get()));
             Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get()));
+
+            var registeredProviders = _loadBalancerManager.GetLoadBalancer().RegisteredProviders;
+
+            foreach (var p in registeredProviders)
+            {
+                Assert.Single(p.Requests);
+                Assert.Equal("request", p.Requests.First());
+            }
 
             Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get()));
             Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get()));
@@ -137,8 +146,7 @@ namespace LoadBalancerTestProject
         [Fact]
         public void Step6_Check_IsAliveProviders()
         {
-            var loadBalancerAlgorithm = new RandomLoadBalancerAlgorithm();
-            _loadBalancerManager = new LoadBalancerManager(loadBalancerAlgorithm);
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
 
             for (var i = 1; i <= 10; i++)
             {
@@ -156,8 +164,7 @@ namespace LoadBalancerTestProject
         [Fact]
         public void Step6_PeriodicCheck_IsAliveProviders()
         {
-            var loadBalancerAlgorithm = new RandomLoadBalancerAlgorithm();
-            _loadBalancerManager = new LoadBalancerManager(loadBalancerAlgorithm);
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
 
             for (var i = 1; i <= 10; i++)
             {
@@ -174,8 +181,7 @@ namespace LoadBalancerTestProject
         [Fact]
         public void Step7_PeriodicCheck_HeartbeatCounter_ReRegister()
         {
-            var loadBalancerAlgorithm = new RandomLoadBalancerAlgorithm();
-            _loadBalancerManager = new LoadBalancerManager(loadBalancerAlgorithm);
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
 
             for (var i = 1; i <= 10; i++)
             {
@@ -200,6 +206,77 @@ namespace LoadBalancerTestProject
 
             Assert.Equal(10, _loadBalancerManager.GetLoadBalancer().RegisteredProviders.Count());
             Assert.Empty(_loadBalancerManager.GetLoadBalancer().DeregisteredProviders);
+        }
+
+        [Fact]
+        public void Step8_ParallelRequetsProcessing()
+        {
+            Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register("provider1"));
+
+            var lb = _loadBalancerManager.GetLoadBalancer();
+
+            Assert.Empty(lb.RegisteredProviders[0].Requests);
+
+        }
+
+        [Fact]
+        public void Step8()
+        {
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_roundRobinAlgorithm);
+
+            var providers = new List<string>();
+
+            for (var i = 1; i <= 10; i++)
+            {
+                var identifier = "providerIdentifier" + i;
+                providers.Add(identifier);
+                Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
+            }
+
+            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get()));
+
+            var registeredProviders = _loadBalancerManager.GetLoadBalancer().RegisteredProviders;
+
+            foreach (var p in registeredProviders)
+            {
+                Assert.Single(p.Requests);
+                Assert.Equal("request", p.Requests.First());
+            }
+
+            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get()));
+
+            foreach (var p in registeredProviders)
+            {
+                Assert.Equal(2, p.Requests.Count);
+            }
+
+            Assert.Null(_loadBalancerManager.Get());
+
+            var lb = _loadBalancerManager.GetLoadBalancer();
+
+            Assert.Contains(lb.RegisteredProviders, i => i.IsActive);
+
+            _loadBalancerManager.Check();
+            Assert.Single(lb.DeregisteredProviders);
+            Assert.Equal(9, lb.RegisteredProviders.Count);
         }
 
     }

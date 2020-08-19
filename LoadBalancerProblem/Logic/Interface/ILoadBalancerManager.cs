@@ -6,20 +6,6 @@ namespace LoadBalancerProblem.Logic.Interface
     {
         const int MAX_NUMBER_OF_PROVIDERS = 10;
 
-        enum RegistrationStatus
-        {
-            ProviderAlreadyRegistered = 1,
-            MaxNumberOfProviderExceeded = 2,
-            RegistrationSuccess = 3,
-            RegistrationFailure = 4
-        }
-
-        enum DeregistrationStatus
-        {
-            DeregistrationSuccess = 1,
-            DeregistrationFailure = 2
-        }
-
         /// <summary>
         /// The asynchronous function registers the provided provider identifier to the loadBalancer.
         /// </summary>
@@ -34,5 +20,6 @@ namespace LoadBalancerProblem.Logic.Interface
         string Get();
         LoadBalancer GetLoadBalancer();
         void Check();
+        void SetLoadBalancerAlgorithm(ILoadBalancerAlgorithm loadBalancerAlgorithm);
     }
 }
