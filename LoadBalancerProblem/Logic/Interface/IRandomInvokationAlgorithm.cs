@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LoadBalancerProblem.Logic.Interface
+﻿namespace LoadBalancerProblem.Logic.Interface
 {
     public interface IRandomInvokationAlgorithm : ILoadBalancerAlgorithm
     {

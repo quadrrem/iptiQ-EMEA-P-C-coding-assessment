@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LoadBalancerProblem.Logic.Interface
+﻿namespace LoadBalancerProblem.Logic.Interface
 {
     public interface ILoadBalancerAlgorithm
     {
+        /// <summary>
+        /// Generic provider invokation algorithm
+        /// </summary>
+        /// <returns>
+        /// Returns invoked provider's index from the registered list
+        /// </returns>
         int Invoke();
     }
 }

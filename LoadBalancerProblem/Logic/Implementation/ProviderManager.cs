@@ -6,7 +6,7 @@ namespace LoadBalancerProblem.Logic.Implementation
     {
         public bool Get(Provider provider)
         {
-            if(provider.Requests.Count < provider.Limit)
+            if(provider.Requests.Count < provider.Limit && provider.IsActive == true)
             {
                 provider.Requests.Enqueue("request");
                 return true;

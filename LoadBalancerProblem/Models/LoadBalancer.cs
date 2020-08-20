@@ -4,6 +4,9 @@ namespace LoadBalancerProblem.Models
 {
     public class LoadBalancer
     {
+        /// <summary>
+        /// A loadBalancer is initialized with empty lists of registered and deregistered lists
+        /// </summary>
         public LoadBalancer()
         {
             registeredProviders = new List<Provider>();
@@ -11,7 +14,7 @@ namespace LoadBalancerProblem.Models
         }
 
         /// <summary>
-        /// A loadbalancer can be connected to a list of 0 or more registered providers
+        /// A list of providers that can receive requests from the loadBalancer
         /// </summary>
         private IList<Provider> registeredProviders;
 
@@ -23,6 +26,9 @@ namespace LoadBalancerProblem.Models
             }
         }
 
+        /// <summary>
+        /// A list of providers that are busy to receive requests from the loadBalancer
+        /// </summary>
         private IList<Provider> deregisteredProviders;
 
         public IList<Provider> DeregisteredProviders

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
+﻿using System.Collections.Generic;
 
 namespace LoadBalancerProblem
 {
@@ -11,7 +9,7 @@ namespace LoadBalancerProblem
             this.identifier = identifier;
             isActive = true;
             requests = new Queue<string>();
-            limit = 2;
+            limit = 2; // for testing purposes, its initiazed with a hardcoded value
         }
 
         /// <summary>
@@ -27,6 +25,11 @@ namespace LoadBalancerProblem
             }
         }
 
+        /// <summary>
+        /// Defines the status of the provider whether its active or inactive
+        /// If the provider's queue has reached the limit, the isActive status will be false
+        /// Otherwise true
+        /// </summary>
         private bool isActive;
 
         public bool IsActive
@@ -41,6 +44,9 @@ namespace LoadBalancerProblem
             }
         }
 
+        /// <summary>
+        /// Every provider has a queue to process the incoming requests
+        /// </summary>
         private Queue<string> requests;
 
         public Queue<string> Requests
@@ -49,15 +55,10 @@ namespace LoadBalancerProblem
             {
                 return requests;
             }
-            set
-            {
-                requests = value;
-            }
         }
 
         /// <summary>
         /// Max number of requests that a provider can handle. 
-        /// We assume any provider can handle maximum 10 requests
         /// </summary>
         private readonly int limit;
 
