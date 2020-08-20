@@ -106,7 +106,7 @@ namespace LoadBalancerProblem.Logic.Implementation
             return DeregistrationStatus.DeregistrationSuccess;
         }
 
-        public string Get()
+        public string Get(string request)
         {
             if (_loadBalancer.RegisteredProviders == null || !_loadBalancer.RegisteredProviders.Any())
             {
@@ -120,7 +120,7 @@ namespace LoadBalancerProblem.Logic.Implementation
             // sends the request to the provider manager
             // if the provider is able to process the request, result will be true
             // if the provider's queue has already reached maximum number of requests, result will be false
-            var result = _providerManager.Get(invokedProvider);
+            var result = _providerManager.Get(invokedProvider, request);
            
             if (result)
             {

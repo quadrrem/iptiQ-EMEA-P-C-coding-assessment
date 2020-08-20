@@ -34,11 +34,12 @@ namespace LoadBalancerProblem.Logic.Interface
         /// <summary>
         /// Receives requests 
         /// </summary>
+        /// <<param name="request">incoming request</param>
         /// <returns>
         /// Returns provider's identifier which has agreed to process the request
         /// Otherwise it returns null to confirm there is no provider that can handle the request
         /// </returns>
-        string Get();
+        string Get(string request);
 
         /// <summary>
         /// Returns the loadBalancer instance with all registered and deregistered providers list

@@ -12,14 +12,14 @@ namespace LoadBalancerTestProject
     public class ProviderTest
     {
         [Fact]
-        public async Task Step1_Test_Success()
+        public void Step1_Test_Success()
         {
             var identifier = "testProvider";
             Assert.Equal(identifier, new Provider(identifier).Identifier);
         }
 
         [Fact]
-        public async Task Step1_Test_Failure()
+        public void Step1_Test_Failure()
         {
             var identifier = "testProvider";
             Assert.NotEqual("testProvider1", new Provider(identifier).Identifier);

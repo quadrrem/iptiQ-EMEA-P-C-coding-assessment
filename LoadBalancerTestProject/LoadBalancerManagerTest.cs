@@ -75,7 +75,7 @@ namespace LoadBalancerTestProject
                 Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
             }
 
-            var invokedProvider = _loadBalancerManager.Get();
+            var invokedProvider = _loadBalancerManager.Get("request");
             Assert.NotNull(invokedProvider);
             Assert.Contains(invokedProvider, providers);
         }
@@ -94,35 +94,36 @@ namespace LoadBalancerTestProject
                 Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
             }
 
-            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get("request1")));
+            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get("request2")));
+            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get("request3")));
+            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get("request4")));
+            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get("request5")));
+            Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get("request6")));
+            Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get("request7")));
+            Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get("request8")));
+            Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get("request9")));
+            Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get("request10")));
 
             var registeredProviders = _loadBalancerManager.GetLoadBalancer().RegisteredProviders;
 
-            foreach (var p in registeredProviders)
+            var count = registeredProviders.Count;
+            for (int i = count - 1, j = 1; i >= 0 && j <= count; i--, j++)
             {
-                Assert.Single(p.Requests);
-                Assert.Equal("request", p.Requests.First());
+                Assert.Single(registeredProviders[i].Requests);
+                Assert.Equal("request" + j, registeredProviders[i].Requests.First());
             }
 
-            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get("request1")));
+            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get("request2")));
+            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get("request3")));
+            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get("request4")));
+            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get("request5")));
+            Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get("request6")));
+            Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get("request7")));
+            Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get("request8")));
+            Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get("request9")));
+            Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get("request10")));
         }
 
         [Fact]
@@ -154,7 +155,7 @@ namespace LoadBalancerTestProject
                 Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
             }
 
-            _loadBalancerManager.Get();
+            _loadBalancerManager.Get("request");
             _loadBalancerManager.Check();
 
             Assert.Equal(10, _loadBalancerManager.GetLoadBalancer().RegisteredProviders.Count());
@@ -233,42 +234,43 @@ namespace LoadBalancerTestProject
                 Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
             }
 
-            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get("request0")));
+            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get("request1")));
+            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get("request2")));
+            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get("request3")));
+            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get("request4")));
+            Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get("request5")));
+            Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get("request6")));
+            Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get("request7")));
+            Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get("request8")));
+            Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get("request9")));
 
             var registeredProviders = _loadBalancerManager.GetLoadBalancer().RegisteredProviders;
 
-            foreach (var p in registeredProviders)
+            var count = registeredProviders.Count;
+            for (int i = count - 1, j = 0; i >= 0 && j < count; i--, j++)
             {
-                Assert.Single(p.Requests);
-                Assert.Equal("request", p.Requests.First());
+                Assert.Single(registeredProviders[i].Requests);
+                Assert.Equal("request"+j, registeredProviders[i].Requests.First());
             }
 
-            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get()));
-            Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get()));
+            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get("request1")));
+            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get("request2")));
+            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get("request3")));
+            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get("request4")));
+            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get("request5")));
+            Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get("request6")));
+            Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get("request7")));
+            Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get("request8")));
+            Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get("request9")));
+            Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get("request10")));
 
             foreach (var p in registeredProviders)
             {
                 Assert.Equal(2, p.Requests.Count);
             }
 
-            Assert.Null(_loadBalancerManager.Get());
+            Assert.Null(_loadBalancerManager.Get("request"));
 
             var lb = _loadBalancerManager.GetLoadBalancer();
 
