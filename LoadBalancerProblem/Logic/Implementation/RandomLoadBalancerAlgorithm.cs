@@ -5,10 +5,16 @@ namespace LoadBalancerProblem.Logic.Implementation
 {
     public class RandomLoadBalancerAlgorithm : IRandomInvokationAlgorithm
     {
+        private int registeredProvidersCount;
+
+        public void SetRegisteredProvidersCounter(int count)
+        {
+            registeredProvidersCount = count;
+        }
         public int Invoke()
         {
             var random = new Random();
-            return random.Next(0, ILoadBalancerManager.MAX_NUMBER_OF_PROVIDERS - 1);
+            return random.Next(0, registeredProvidersCount - 1);
         }
     }
 }

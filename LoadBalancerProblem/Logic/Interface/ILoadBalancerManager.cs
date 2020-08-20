@@ -59,5 +59,6 @@ namespace LoadBalancerProblem.Logic.Interface
         /// </summary>
         /// <param name="loadBalancerAlgorithm"></param>
         void SetLoadBalancerAlgorithm(ILoadBalancerAlgorithm loadBalancerAlgorithm);
+        void PeriodicCheck();
     }
 }

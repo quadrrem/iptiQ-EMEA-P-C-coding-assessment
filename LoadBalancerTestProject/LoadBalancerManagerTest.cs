@@ -62,10 +62,14 @@ namespace LoadBalancerTestProject
         }
 
         [Fact]
-        public void Step3_RandomLoadBalancerInvocationTest_Success()
+        public void Step2_RegisterProvider_Failure_RegistrationFailure_NullInput()
         {
-            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
+            Assert.Equal(RegistrationStatus.RegistrationFailure, _loadBalancerManager.Register(null));;
+        }
 
+        [Fact]
+        public void Step3_RandomInvocation_Success()
+        {
             var providers = new List<string>();
 
             for(var i = 1; i <= 10; i++)
@@ -75,55 +79,60 @@ namespace LoadBalancerTestProject
                 Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
             }
 
+            _randomInvokationAlgorithm.SetRegisteredProvidersCounter(10);
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
+
             var invokedProvider = _loadBalancerManager.Get("request");
             Assert.NotNull(invokedProvider);
             Assert.Contains(invokedProvider, providers);
         }
 
         [Fact]
-        public void Step4_RoundRobinLoadBalancerInvocationTest_InvokeRequestsToProviders_Success()
+        public void Step3_RandomInvocation_WhenRegistredProviderListIsEmpty_Failure()
         {
-            _loadBalancerManager.SetLoadBalancerAlgorithm(_roundRobinAlgorithm);
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
 
+            var invokedProvider = _loadBalancerManager.Get("request");
+            Assert.Null(invokedProvider);
+        }
+
+        [Fact]
+        public void Step4_RoundRobinInvocation_Success()
+        {
             var providers = new List<string>();
 
-            for (var i = 1; i <= 10; i++)
+            for (var i = 1; i <= 5; i++)
             {
                 var identifier = "providerIdentifier" + i;
                 providers.Add(identifier);
                 Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
             }
 
-            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get("request1")));
-            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get("request2")));
-            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get("request3")));
-            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get("request4")));
-            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get("request5")));
+            var registeredProvidersCount = _loadBalancerManager.GetLoadBalancer().RegisteredProviders.Count;
+
+            _roundRobinAlgorithm.SetRegisteredProvidersCounter(registeredProvidersCount);
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_roundRobinAlgorithm);
+
             Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get("request6")));
             Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get("request7")));
             Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get("request8")));
             Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get("request9")));
             Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get("request10")));
 
-            var registeredProviders = _loadBalancerManager.GetLoadBalancer().RegisteredProviders;
-
-            var count = registeredProviders.Count;
-            for (int i = count - 1, j = 1; i >= 0 && j <= count; i--, j++)
-            {
-                Assert.Single(registeredProviders[i].Requests);
-                Assert.Equal("request" + j, registeredProviders[i].Requests.First());
-            }
-
-            Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get("request1")));
-            Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get("request2")));
-            Assert.Equal(7, providers.IndexOf(_loadBalancerManager.Get("request3")));
-            Assert.Equal(6, providers.IndexOf(_loadBalancerManager.Get("request4")));
-            Assert.Equal(5, providers.IndexOf(_loadBalancerManager.Get("request5")));
             Assert.Equal(4, providers.IndexOf(_loadBalancerManager.Get("request6")));
             Assert.Equal(3, providers.IndexOf(_loadBalancerManager.Get("request7")));
             Assert.Equal(2, providers.IndexOf(_loadBalancerManager.Get("request8")));
             Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get("request9")));
             Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get("request10")));
+        }
+
+        [Fact]
+        public void Step4_RoundRobinInvocation_Failure_WhenRegistredProviderListIsEmpty()
+        {
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_roundRobinAlgorithm);
+
+            var invokedProvider = _loadBalancerManager.Get("request");
+            Assert.Null(invokedProvider);
         }
 
         [Fact]
@@ -136,7 +145,7 @@ namespace LoadBalancerTestProject
         }
 
         [Fact]
-        public void Step5_DeregisterProvider_Failure()
+        public void Step5_DeregisterProvider_Failure_ProviderNotFoundInTheRegisteredProviderList()
         {
             Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register("providerIdentifier1"));
             Assert.Equal(DeregistrationStatus.DeregistrationFailure, _loadBalancerManager.Deregister("providerIdentifier11"));
@@ -145,15 +154,16 @@ namespace LoadBalancerTestProject
         }
 
         [Fact]
-        public void Step6_Check_IsAliveProviders()
+        public void Step6_Check_IsAliveProviders_Success()
         {
-            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
-
             for (var i = 1; i <= 10; i++)
             {
                 var identifier = "providerIdentifier" + i;
                 Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
             }
+
+            _randomInvokationAlgorithm.SetRegisteredProvidersCounter(10);
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
 
             _loadBalancerManager.Get("request");
             _loadBalancerManager.Check();
@@ -163,7 +173,7 @@ namespace LoadBalancerTestProject
         }
 
         [Fact]
-        public void Step6_PeriodicCheck_IsAliveProviders()
+        public void Step7_HeartbeatCheacker_ReRegister_a_Provider_WhenProviderIsActiveTwiceInARow_Success()
         {
             _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
 
@@ -174,57 +184,49 @@ namespace LoadBalancerTestProject
             }
 
             _loadBalancerManager.GetLoadBalancer().RegisteredProviders[0].IsActive = false;
-            _loadBalancerManager.Check();
 
-            Assert.Equal(9, _loadBalancerManager.GetLoadBalancer().RegisteredProviders.Count());
-            Assert.Single(_loadBalancerManager.GetLoadBalancer().DeregisteredProviders);
-        }
-        [Fact]
-        public void Step7_PeriodicCheck_HeartbeatCounter_ReRegister()
-        {
-            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
-
-            for (var i = 1; i <= 10; i++)
-            {
-                var identifier = "providerIdentifier" + i;
-                Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
-            }
-
-            _loadBalancerManager.GetLoadBalancer().RegisteredProviders[0].IsActive = false;
             _loadBalancerManager.Check();
 
             Assert.Equal(9, _loadBalancerManager.GetLoadBalancer().RegisteredProviders.Count());
             Assert.Single(_loadBalancerManager.GetLoadBalancer().DeregisteredProviders);
 
+            // heartbeat checked 1 when the provider is active
             _loadBalancerManager.GetLoadBalancer().DeregisteredProviders[0].IsActive = true;
+
             _loadBalancerManager.Check();
 
+            // heartbeat checked 2 when the provider is active
             Assert.Equal(9, _loadBalancerManager.GetLoadBalancer().RegisteredProviders.Count());
             Assert.Single(_loadBalancerManager.GetLoadBalancer().DeregisteredProviders);
 
-            _loadBalancerManager.GetLoadBalancer().DeregisteredProviders[0].IsActive = true;
             _loadBalancerManager.Check();
 
+            // provider re registered
             Assert.Equal(10, _loadBalancerManager.GetLoadBalancer().RegisteredProviders.Count());
             Assert.Empty(_loadBalancerManager.GetLoadBalancer().DeregisteredProviders);
         }
 
         [Fact]
-        public void Step8_ParallelRequetsProcessing()
+        public void Step6_PeriodicCheck()
         {
-            Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register("provider1"));
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
 
-            var lb = _loadBalancerManager.GetLoadBalancer();
+            for (var i = 1; i <= 10; i++)
+            {
+                var identifier = "providerIdentifier" + i;
+                Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
+            }
 
-            Assert.Empty(lb.RegisteredProviders[0].Requests);
+            _loadBalancerManager.GetLoadBalancer().RegisteredProviders[0].IsActive = false;
+            _loadBalancerManager.PeriodicCheck();
 
+            Assert.Equal(9, _loadBalancerManager.GetLoadBalancer().RegisteredProviders.Count());
+            Assert.Single(_loadBalancerManager.GetLoadBalancer().DeregisteredProviders);
         }
 
         [Fact]
-        public void Step8()
+        public void Step8_ClusterCapacityLimit_WithRoundRobin_Success()
         {
-            _loadBalancerManager.SetLoadBalancerAlgorithm(_roundRobinAlgorithm);
-
             var providers = new List<string>();
 
             for (var i = 1; i <= 10; i++)
@@ -233,6 +235,11 @@ namespace LoadBalancerTestProject
                 providers.Add(identifier);
                 Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register(identifier));
             }
+
+            var registeredProviders = _loadBalancerManager.GetLoadBalancer().RegisteredProviders;
+            var count = registeredProviders.Count;
+            _roundRobinAlgorithm.SetRegisteredProvidersCounter(count);
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_roundRobinAlgorithm);
 
             Assert.Equal(9, providers.IndexOf(_loadBalancerManager.Get("request0")));
             Assert.Equal(8, providers.IndexOf(_loadBalancerManager.Get("request1")));
@@ -245,9 +252,7 @@ namespace LoadBalancerTestProject
             Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get("request8")));
             Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get("request9")));
 
-            var registeredProviders = _loadBalancerManager.GetLoadBalancer().RegisteredProviders;
-
-            var count = registeredProviders.Count;
+            // all the providers has got one request to process
             for (int i = count - 1, j = 0; i >= 0 && j < count; i--, j++)
             {
                 Assert.Single(registeredProviders[i].Requests);
@@ -265,6 +270,7 @@ namespace LoadBalancerTestProject
             Assert.Equal(1, providers.IndexOf(_loadBalancerManager.Get("request9")));
             Assert.Equal(0, providers.IndexOf(_loadBalancerManager.Get("request10")));
 
+            // all the providers has got 2 requests to process
             foreach (var p in registeredProviders)
             {
                 Assert.Equal(2, p.Requests.Count);
@@ -274,12 +280,36 @@ namespace LoadBalancerTestProject
 
             var lb = _loadBalancerManager.GetLoadBalancer();
 
-            Assert.Contains(lb.RegisteredProviders, i => i.IsActive);
+            Assert.False(lb.RegisteredProviders[9].IsActive);
 
             _loadBalancerManager.Check();
-            Assert.Single(lb.DeregisteredProviders);
-            Assert.Equal(9, lb.RegisteredProviders.Count);
+
+            Assert.Empty(lb.RegisteredProviders);
+            Assert.Equal(10, lb.DeregisteredProviders.Count);
         }
 
+        [Fact]
+        public void Step8_ClusterCapacityLimit_RandomInvokation_Success()
+        {
+            var providers = new List<string>();
+
+            Assert.Equal(RegistrationStatus.RegistrationSuccess, _loadBalancerManager.Register("provider1"));
+
+            var registeredProviders = _loadBalancerManager.GetLoadBalancer().RegisteredProviders;
+
+            var count = registeredProviders.Count;
+            _randomInvokationAlgorithm.SetRegisteredProvidersCounter(count);
+            _loadBalancerManager.SetLoadBalancerAlgorithm(_randomInvokationAlgorithm);
+
+            Assert.Equal("provider1", _loadBalancerManager.Get("request1"));
+            Assert.Single(registeredProviders.First(x => x.Identifier == "provider1").Requests);
+
+            Assert.Equal("provider1", _loadBalancerManager.Get("request2"));
+            Assert.Equal(2, registeredProviders.First(x => x.Identifier == "provider1").Requests.Count);
+
+            Assert.Null(_loadBalancerManager.Get("request"));
+
+            Assert.DoesNotContain(_loadBalancerManager.GetLoadBalancer().RegisteredProviders, x => x.IsActive);
+        }
     }
 }

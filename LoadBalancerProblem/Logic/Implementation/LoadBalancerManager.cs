@@ -5,6 +5,7 @@ using System.Threading;
 using static LoadBalancerProblem.Logic.Interface.ILoadBalancerManager;
 using LoadBalancerProblem.Logic.Interface;
 using LoadBalancerProblem.Models;
+using System.Timers;
 
 namespace LoadBalancerProblem.Logic.Implementation
 {
@@ -18,6 +19,8 @@ namespace LoadBalancerProblem.Logic.Implementation
         /// Tracks the number of times heartbeat is checked for deregistered providers
         /// </summary>
         readonly IDictionary<string, int> DeregisteredProvidersHeartBeat = new Dictionary<string, int>();
+
+        private System.Timers.Timer aTimer;
 
         public LoadBalancerManager(
             IProviderManager providerManager,
@@ -39,6 +42,12 @@ namespace LoadBalancerProblem.Logic.Implementation
 
         public RegistrationStatus Register(string providerIdentifier)
         {
+            // null or whitespace as argument are not valid
+            if (string.IsNullOrWhiteSpace(providerIdentifier))
+            {
+                return RegistrationStatus.RegistrationFailure;
+            }
+
             // checks whether the registered providers list already contains maximum number of providers
             if(_loadBalancer.RegisteredProviders.Count == MAX_NUMBER_OF_PROVIDERS)
             {
@@ -127,10 +136,6 @@ namespace LoadBalancerProblem.Logic.Implementation
                 return invokedProvider.Identifier;
             }
 
-            // update the registered provider list with this provider's status
-            invokedProvider.IsActive = false;
-            _loadBalancer.RegisteredProviders[invokedProviderIndex] = invokedProvider;
-
             return null;           
         }
 
@@ -140,7 +145,38 @@ namespace LoadBalancerProblem.Logic.Implementation
             // if there is any inactive provider, it deregisters it
             foreach(var p in _loadBalancer.RegisteredProviders.ToList())
             {
-                if(p.IsActive == false)
+                if(p.IsActive == false || p.Requests.Count >= p.Limit)
+                {
+                    Deregister(p.Identifier);
+                }
+            }
+
+            // iterates through the deregistered providers list
+            // if there is any provider whose heartbeat has been checked 2 times and found active
+            // it registers the provider again
+            foreach (var p in _loadBalancer.DeregisteredProviders.ToList())
+            {
+                if (p.IsActive == true)
+                {
+                    DeregisteredProvidersHeartBeat[p.Identifier]++;
+                }
+
+                if (DeregisteredProvidersHeartBeat[p.Identifier] >= 2)
+                {
+                    Register(p.Identifier);
+                }
+            }
+        }
+
+        public void Check(Object source, ElapsedEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"The Elapsed event was raised at {e.SignalTime} on thred {Thread.CurrentThread.ManagedThreadId}");
+
+            // iterates through the registered providers list
+            // if there is any inactive provider, it deregisters it
+            foreach (var p in _loadBalancer.RegisteredProviders.ToList())
+            {
+                if (p.IsActive == false || p.Requests.Count >= p.Limit)
                 {
                     Deregister(p.Identifier);
                 }
@@ -165,16 +201,13 @@ namespace LoadBalancerProblem.Logic.Implementation
 
         public void PeriodicCheck()
         {
-            var thread = new Thread(new ThreadStart(Check));
-
-            // Start the thread.
-            thread.Start();
-
-            if (thread.IsAlive)
-            {
-                Console.WriteLine("The Main() thread calls this after "
-                    + "starting the new InstanceCaller thread.");
-            }
+            // Create a timer with a two second interval.
+            aTimer = new System.Timers.Timer(1000);
+            // Hook up the Elapsed event for the timer. 
+            aTimer.Elapsed += Check;
+            //aTimer.AutoReset = true;
+            aTimer.Enabled = true;
+            Thread.Sleep(2000);
         }
     }
 }
