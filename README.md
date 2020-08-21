@@ -19,5 +19,7 @@ There you will see how many test cases are passed out of the total number of tes
 > Passed: 17</br>
 >Total time: 4.1878 Seconds</br>
 >The command "dotnet test LoadBalancerTestProject/LoadBalancerTestProject.csproj" exited with 0.</br>
+## How to run locally
+Clone the project and open the .sln file with Visual Studio 2019. Open Test explorer and run all the test cases.
 ## Number of test cases
 There are in total 17 test cases which cover all the edge cases of the solution. 
